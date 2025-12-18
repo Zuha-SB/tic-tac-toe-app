@@ -2,6 +2,8 @@
 
 A web-based Tic-Tac-Toe game where you can play against various AI opponents of different difficulty levels.
 
+**[Play Live Demo](https://tic-tac-toe-app-ym72.onrender.com)**
+
 ## Features
 
 - **5 AI Opponents** ranked by difficulty:
