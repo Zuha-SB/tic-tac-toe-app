@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent-cyan: #00f5d4;
+            --accent-magenta: #f72585;
+            --accent-yellow: #fee440;
+            --text-primary: #ffffff;
+            --text-secondary: #8b8b9e;
+            --border-color: #2a2a3a;
+            --glow-cyan: 0 0 30px rgba(0, 245, 212, 0.3);
+            --glow-magenta: 0 0 30px rgba(247, 37, 133, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 245, 212, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(247, 37, 133, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-magenta) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .settings-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 30px;
+        }
+
+        .setting-group {
+            margin-bottom: 24px;
+        }
+
+        .setting-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.15), rgba(247, 37, 133, 0.15));
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .difficulty-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .difficulty-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .difficulty-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.15), rgba(247, 37, 133, 0.15));
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .difficulty-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .difficulty-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+
+        .difficulty-btn.active .difficulty-dot.filled {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan);
+        }
+
+        .difficulty-dot.filled {
+            background: var(--text-secondary);
+        }
+
+        .start-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            color: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 245, 212, 0.3), 0 10px 40px rgba(247, 37, 133, 0.3);
+        }
+
+        .game-panel {
+            display: none;
+        }
+
+        .game-panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-mark {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .player-mark.x {
+            background: rgba(0, 245, 212, 0.2);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .player-mark.o {
+            background: rgba(247, 37, 133, 0.2);
+            color: var(--accent-magenta);
+            border: 1px solid var(--accent-magenta);
+        }
+
+        .player-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .turn-indicator {
+            font-size: 0.75rem;
+            color: var(--accent-yellow);
+            letter-spacing: 1px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:hover:not(.taken):not(.disabled) {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 245, 212, 0.05);
+        }
+
+        .cell.taken, .cell.disabled {
+            cursor: default;
+        }
+
+        .cell.x {
+            color: var(--accent-cyan);
+            text-shadow: var(--glow-cyan);
+        }
+
+        .cell.o {
+            color: var(--accent-magenta);
+            text-shadow: var(--glow-magenta);
+        }
+
+        .cell.winning {
+            animation: pulse 0.6s ease infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .cell.pop {
+            animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .result-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .result-overlay.active {
+            display: flex;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .result-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .result-text {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .result-text.win {
+            color: var(--accent-cyan);
+            text-shadow: var(--glow-cyan);
+        }
+
+        .result-text.lose {
+            color: var(--accent-magenta);
+            text-shadow: var(--glow-magenta);
+        }
+
+        .result-text.draw {
+            color: var(--accent-yellow);
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .result-btn {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .result-btn:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .result-btn.primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            border: none;
+            color: var(--bg-primary);
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .ai-thinking {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            height: 20px;
+            margin-bottom: 10px;
+        }
+
+        .ai-thinking.active::after {
+            content: '...';
+            animation: dots 1s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Tic Tac Toe</h1>
+            <p class="subtitle">Human vs Machine</p>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-group">
+                <label class="setting-label">Who goes first?</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-first="human">You (X)</button>
+                    <button class="toggle-btn" data-first="ai">AI (X)</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Select opponent</label>
+                <div class="difficulty-grid" id="difficultyGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <button class="start-btn" id="startBtn">Start Game</button>
+        </div>
+
+        <!-- Game Panel -->
+        <div class="game-panel" id="gamePanel">
+            <button class="back-btn" id="backBtn">← Back to Menu</button>
+            
+            <div class="status-bar">
+                <div class="player-info">
+                    <div class="player-mark" id="humanMark">X</div>
+                    <span class="player-label">You</span>
+                </div>
+                <div class="turn-indicator" id="turnIndicator">Your turn</div>
+                <div class="player-info">
+                    <span class="player-label" id="aiLabel">Random</span>
+                    <div class="player-mark" id="aiMark">O</div>
+                </div>
+            </div>
+
+            <div class="ai-thinking" id="aiThinking"></div>
+
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Overlay -->
+    <div class="result-overlay" id="resultOverlay">
+        <div class="result-card">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <div class="result-text" id="resultText">You Win!</div>
+            <div class="result-buttons">
+                <button class="result-btn" id="menuBtn">Menu</button>
+                <button class="result-btn primary" id="rematchBtn">Rematch</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let players = [];
+        let selectedPlayer = 'random';
+        let humanFirst = true;
+        let humanMark = 'X';
+        let aiMark = 'O';
+        let gameActive = false;
+        let isAiTurn = false;
+
+        // Elements
+        const settingsPanel = document.getElementById('settingsPanel');
+        const gamePanel = document.getElementById('gamePanel');
+        const difficultyGrid = document.getElementById('difficultyGrid');
+        const board = document.getElementById('board');
+        const cells = board.querySelectorAll('.cell');
+        const resultOverlay = document.getElementById('resultOverlay');
+        const aiThinking = document.getElementById('aiThinking');
+        const turnIndicator = document.getElementById('turnIndicator');
+        const humanMarkEl = document.getElementById('humanMark');
+        const aiMarkEl = document.getElementById('aiMark');
+        const aiLabel = document.getElementById('aiLabel');
+
+        // Initialize
+        async function init() {
+            const response = await fetch('/api/players');
+            players = await response.json();
+            renderDifficultyButtons();
+            setupEventListeners();
+        }
+
+        function renderDifficultyButtons() {
+            difficultyGrid.innerHTML = players.map((p, i) => `
+                <button class="difficulty-btn ${i === 0 ? 'active' : ''}" data-player="${p.id}">
+                    <span>${p.name}</span>
+                    <div class="difficulty-dots">
+                        ${Array(5).fill(0).map((_, j) => 
+                            `<div class="difficulty-dot ${j < p.difficulty ? 'filled' : ''}"></div>`
+                        ).join('')}
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            // First player toggle
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    humanFirst = btn.dataset.first === 'human';
+                });
+            });
+
+            // Difficulty selection
+            difficultyGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.difficulty-btn');
+                if (btn) {
+                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedPlayer = btn.dataset.player;
+                }
+            });
+
+            // Start game
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('backBtn').addEventListener('click', showMenu);
+            document.getElementById('menuBtn').addEventListener('click', showMenu);
+            document.getElementById('rematchBtn').addEventListener('click', startGame);
+
+            // Cell clicks
+            cells.forEach(cell => {
+                cell.addEventListener('click', () => handleCellClick(parseInt(cell.dataset.index)));
+            });
+        }
+
+        async function startGame() {
+            const response = await fetch('/api/new-game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    playerType: selectedPlayer,
+                    humanFirst: humanFirst
+                })
+            });
+
+            const data = await response.json();
+            humanMark = data.humanMark;
+            aiMark = data.aiMark;
+            gameActive = true;
+            isAiTurn = false;
+
+            // Update UI
+            humanMarkEl.textContent = humanMark;
+            humanMarkEl.className = `player-mark ${humanMark.toLowerCase()}`;
+            aiMarkEl.textContent = aiMark;
+            aiMarkEl.className = `player-mark ${aiMark.toLowerCase()}`;
+            aiLabel.textContent = players.find(p => p.id === selectedPlayer)?.name || 'AI';
+
+            // Reset board
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.className = 'cell';
+            });
+
+            // Update board if AI went first
+            updateBoard(data.board);
+            
+            resultOverlay.classList.remove('active');
+            settingsPanel.style.display = 'none';
+            gamePanel.classList.add('active');
+            
+            updateTurnIndicator();
+        }
+
+        function showMenu() {
+            gamePanel.classList.remove('active');
+            settingsPanel.style.display = 'block';
+            resultOverlay.classList.remove('active');
+            gameActive = false;
+        }
+
+        function updateBoard(boardState) {
+            boardState.forEach((mark, i) => {
+                if (mark) {
+                    cells[i].textContent = mark;
+                    cells[i].classList.add(mark.toLowerCase(), 'taken');
+                    if (!cells[i].classList.contains('pop')) {
+                        cells[i].classList.add('pop');
+                    }
+                }
+            });
+        }
+
+        function updateTurnIndicator() {
+            if (isAiTurn) {
+                turnIndicator.textContent = "AI's turn";
+                aiThinking.textContent = "Thinking";
+                aiThinking.classList.add('active');
+            } else {
+                turnIndicator.textContent = "Your turn";
+                aiThinking.textContent = "";
+                aiThinking.classList.remove('active');
+            }
+        }
+
+        async function handleCellClick(index) {
+            if (!gameActive || isAiTurn) return;
+            if (cells[index].classList.contains('taken')) return;
+
+            // Disable further clicks while processing
+            isAiTurn = true;
+            updateTurnIndicator();
+
+            // Mark human move immediately for responsiveness
+            cells[index].textContent = humanMark;
+            cells[index].classList.add(humanMark.toLowerCase(), 'taken', 'pop');
+
+            const response = await fetch('/api/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ position: index })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                // Revert if error
+                cells[index].textContent = '';
+                cells[index].classList.remove(humanMark.toLowerCase(), 'taken', 'pop');
+                isAiTurn = false;
+                updateTurnIndicator();
+                return;
+            }
+
+            // Show AI move with slight delay for better UX
+            if (data.aiMove !== null && data.aiMove !== undefined) {
+                await new Promise(r => setTimeout(r, 400));
+                cells[data.aiMove].textContent = aiMark;
+                cells[data.aiMove].classList.add(aiMark.toLowerCase(), 'taken', 'pop');
+            }
+
+            if (data.gameOver) {
+                gameActive = false;
+                showResult(data.winner);
+            } else {
+                isAiTurn = false;
+                updateTurnIndicator();
+            }
+        }
+
+        function showResult(winner) {
+            const icon = document.getElementById('resultIcon');
+            const text = document.getElementById('resultText');
+
+            if (winner === 'human') {
+                icon.textContent = '🎉';
+                text.textContent = 'You Win!';
+                text.className = 'result-text win';
+            } else if (winner === 'ai') {
+                icon.textContent = '🤖';
+                text.textContent = 'AI Wins!';
+                text.className = 'result-text lose';
+            } else {
+                icon.textContent = '🤝';
+                text.textContent = "It's a Draw!";
+                text.className = 'result-text draw';
+            }
+
+            setTimeout(() => {
+                resultOverlay.classList.add('active');
+            }, 600);
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
+
